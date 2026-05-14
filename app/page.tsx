@@ -14,7 +14,7 @@ export default function Home() {
             SPI を、パズルで攻略する。
           </h1>
           <p className="mx-auto max-w-xl text-lg leading-relaxed text-zinc-600 dark:text-zinc-400">
-            転職・就活で受ける SPI／玉手箱の<strong className="text-zinc-900 dark:text-zinc-100">推論問題</strong>を、
+            就活・転職で受ける SPI／玉手箱の<strong className="text-zinc-900 dark:text-zinc-100">推論問題</strong>を、
             <br className="hidden sm:block" />
             ナンプレ風のロジパズUIで遊びながら攻略する Web アプリ。
           </p>
@@ -28,28 +28,33 @@ export default function Home() {
               ナンプレ感覚
             </h3>
             <p className="mt-1 text-xs text-zinc-600 dark:text-zinc-400">
-              論理を埋めるパズル UI で中毒性のある攻略体験
+              論理を埋めるパズル UI で、暗記しないで身につく
             </p>
           </div>
           <div className="rounded-xl border border-zinc-200 bg-white p-5 text-left dark:border-zinc-800 dark:bg-zinc-900">
-            <div className="text-2xl">🎯</div>
+            <div className="text-2xl">🎓</div>
             <h3 className="mt-2 text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-              業界別パック
+              就活生は無料
             </h3>
             <p className="mt-1 text-xs text-zinc-600 dark:text-zinc-400">
-              IT営業／人材業界／経理など、職種別の問題シリーズを展開予定
+              基本機能はすべて無料・広告なし。1日5分の習慣化設計
             </p>
           </div>
           <div className="rounded-xl border border-zinc-200 bg-white p-5 text-left dark:border-zinc-800 dark:bg-zinc-900">
-            <div className="text-2xl">⏱️</div>
+            <div className="text-2xl">💼</div>
             <h3 className="mt-2 text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-              1日5分の習慣
+              中途は業界別パック
             </h3>
             <p className="mt-1 text-xs text-zinc-600 dark:text-zinc-400">
-              通勤・スキマ時間で続く設計。広告ゼロでサクサク
+              IT営業／人材／経理など、現役人事監修の問題シリーズ
             </p>
           </div>
         </div>
+
+        {/* 信頼の一言 */}
+        <p className="max-w-xl text-sm text-zinc-500 dark:text-zinc-500">
+          人材紹介・人事の現役経験者が、就活生・転職活動者のために設計しています。
+        </p>
 
         {/* CTA */}
         <div className="flex flex-col items-center gap-3">

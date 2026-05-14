@@ -14,10 +14,10 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "SPI ナンプレ - 推論問題をパズル感覚で攻略",
-  description: "転職活動者のための、SPI／玉手箱の推論問題をナンプレ風UIで遊びながら攻略できるWebアプリ。広告ゼロ、1日5分の習慣化設計。",
+  description: "就活・転職で受ける SPI／玉手箱の推論問題を、ナンプレ風UIで遊びながら攻略できるWebアプリ。就活生は無料、中途は業界別パック。広告ゼロ・1日5分の習慣化設計。",
   openGraph: {
     title: "SPI ナンプレ - 推論問題をパズル感覚で攻略",
-    description: "転職活動者のための、SPI推論をナンプレ風UIで攻略するWebアプリ。",
+    description: "就活・転職のSPI推論をナンプレ風UIで攻略。就活生は無料、中途は業界別パック。",
     type: "website",
   },
 };
