@@ -112,8 +112,53 @@ export const problem_1_3: Problem = {
   tips: "ヒント①と③のコンビが鍵：『C > A』＋『C ≠ 1位』から C=2位、A=3位 が確定する。「等価な制約を3つ4つ組み合わせて徐々に範囲を狭める」が SPI推論の定石。",
 };
 
+// =============================
+// 問題 2-1：5人の営業マンの売上ランキング（Lv.2 新人）
+// =============================
+export const problem_2_1: Problem = {
+  id: "2-1",
+  rank: 2,
+  rankTitle: "新人",
+  rankEmoji: "🌱",
+  title: "5人の営業マン、月末の数字くらべ",
+  scenario:
+    "ある営業所の月末。5人の営業マンが今月の数字を見比べている。コーヒー片手に、誰かがつぶやいた──「ヤバい、また○○に抜かれた」。次のヒントから5人の順位（1位〜5位）を推理せよ。",
+  characters: [
+    { id: "A", emoji: "👔", description: "中堅5年目、いつも安定の中位狙い" },
+    {
+      id: "B",
+      emoji: "🎯",
+      description: "失速気味、今月も後輩に追い抜かれたかも",
+    },
+    { id: "C", emoji: "🥇", description: "トップ争いの常連、安定して上位" },
+    {
+      id: "D",
+      emoji: "🚀",
+      description: "急成長中のエース、今月は宣言通りトップを狙う",
+    },
+    { id: "E", emoji: "💼", description: "バランス型、波のないコンスタント" },
+  ],
+  hints: [
+    "A の売上を上回ったのは、ちょうど2人だけだった。",
+    "E と C の順位は、ちょうど2位離れていた。",
+    "後輩 D は、先輩 B との直接対決でついに勝った。",
+    "E はバランス型らしく、B よりは確実に上の数字を残した。",
+    "C が4位という結末は、コーヒーが冷めるくらい予想外だっただろう。",
+  ],
+  positions: ["1位", "2位", "3位", "4位", "5位"],
+  solution: { D: "1位", C: "2位", A: "3位", E: "4位", B: "5位" },
+  estimatedSeconds: 240,
+  timeLimit: 75,
+  tips: "ヒント①「Aを上回ったのが2人だけ」から A=3位 を直接確定するのが鍵。残りは |E-C|=2、D>B、E>B、C≠4 で場合分けすると一意解に。5人になっても「確定情報から固める」のは同じ。",
+};
+
 // 全問題リスト（順序が表示順）
-export const problems: Problem[] = [problem_1_1, problem_1_2, problem_1_3];
+export const problems: Problem[] = [
+  problem_1_1,
+  problem_1_2,
+  problem_1_3,
+  problem_2_1,
+];
 
 // ID で取得
 export function getProblemById(id: string): Problem | undefined {

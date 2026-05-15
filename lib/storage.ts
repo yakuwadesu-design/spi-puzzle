@@ -75,3 +75,54 @@ export function formatTime(seconds: number): string {
   if (m === 0) return `${s}秒`;
   return `${m}分${s.toString().padStart(2, "0")}秒`;
 }
+
+// ==============================
+// ランク解放ロジック
+// ==============================
+
+type ProblemLike = { id: string; rank: number };
+
+export function getRankProgress(
+  rank: number,
+  allProblems: ProblemLike[]
+): { total: number; solved: number; unlocked: boolean } {
+  const rankProblems = allProblems.filter((p) => p.rank === rank);
+  const total = rankProblems.length;
+  const progress = loadProgress();
+  const solved = rankProblems.filter((p) => !!progress.records[p.id]).length;
+
+  let unlocked = false;
+  if (rank === 1) {
+    unlocked = true;
+  } else {
+    const prevRankProblems = allProblems.filter((p) => p.rank === rank - 1);
+    if (prevRankProblems.length > 0) {
+      unlocked = prevRankProblems.every((p) => !!progress.records[p.id]);
+    }
+  }
+
+  return { total, solved, unlocked };
+}
+
+export function getHighestUnlockedRank(allProblems: ProblemLike[]): number {
+  const ranks = Array.from(new Set(allProblems.map((p) => p.rank))).sort(
+    (a, b) => a - b
+  );
+  let highest = 1;
+  for (const r of ranks) {
+    if (getRankProgress(r, allProblems).unlocked) highest = r;
+  }
+  return highest;
+}
+
+const UNLOCK_SEEN_KEY_PREFIX = "spi-puzzle-unlock-seen-";
+
+export function hasSeenUnlock(rank: number): boolean {
+  if (!isClient()) return true; // SSR safety
+  return localStorage.getItem(UNLOCK_SEEN_KEY_PREFIX + rank) === "true";
+}
+
+export function markUnlockSeen(rank: number): void {
+  if (!isClient()) return;
+  localStorage.setItem(UNLOCK_SEEN_KEY_PREFIX + rank, "true");
+}

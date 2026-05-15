@@ -1,12 +1,18 @@
 import Link from "next/link";
 import { problems } from "@/data/problems";
-import { ProblemCard } from "@/components/ProblemCard";
+import { RankSection } from "@/components/RankSection";
+import { RankSummary } from "@/components/RankSummary";
 
 export default function PlayIndex() {
-  const byRank = problems.reduce<Record<number, typeof problems>>((acc, p) => {
-    (acc[p.rank] ??= []).push(p);
-    return acc;
-  }, {});
+  // 表示するランクのリスト（実装済 + 次の1ランク）
+  const definedRanks = Array.from(
+    new Set(problems.map((p) => p.rank))
+  ).sort((a, b) => a - b);
+  const maxDefinedRank = Math.max(...definedRanks);
+  // 次のランクも「ロック」状態で表示する（最大 Lv.7まで）
+  const displayRanks = Array.from(
+    new Set([...definedRanks, Math.min(maxDefinedRank + 1, 7)])
+  ).sort((a, b) => a - b);
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-8 text-zinc-900 dark:text-zinc-100 sm:py-12">
@@ -20,52 +26,15 @@ export default function PlayIndex() {
       </div>
 
       <h1 className="mb-2 text-3xl font-bold sm:text-4xl">問題を選ぶ</h1>
-      <p className="mb-8 text-sm text-zinc-600 dark:text-zinc-400">
-        現在解放されているのは <strong>🔰 内定者 Lv.1</strong> の問題です。3問すべてクリアすると次のランクが開放されます（実装予定）。
+      <p className="mb-6 text-sm text-zinc-600 dark:text-zinc-400">
+        各ランクの問題をすべてクリアすると次のランクが解放されます。
       </p>
 
-      {Object.entries(byRank).map(([rank, rankProblems]) => {
-        const head = rankProblems[0];
-        return (
-          <section key={rank} className="mb-10">
-            <div className="mb-4 flex items-center gap-3">
-              <span className="text-3xl">{head.rankEmoji}</span>
-              <div>
-                <h2 className="text-lg font-bold">
-                  {head.rankTitle}{" "}
-                  <span className="text-zinc-400">Lv.{head.rank}</span>
-                </h2>
-                <p className="text-xs text-zinc-500">
-                  {rankProblems.length}問 ・ 制限時間 {head.timeLimit}秒/問
-                </p>
-              </div>
-            </div>
+      <RankSummary />
 
-            <div className="grid gap-3 sm:grid-cols-2">
-              {rankProblems.map((p) => (
-                <ProblemCard key={p.id} problem={p} />
-              ))}
-            </div>
-          </section>
-        );
-      })}
-
-      <section className="mb-10 opacity-50">
-        <div className="mb-4 flex items-center gap-3">
-          <span className="grayscale text-3xl">🌱</span>
-          <div>
-            <h2 className="text-lg font-bold">
-              新人 <span className="text-zinc-400">Lv.2</span>
-            </h2>
-            <p className="text-xs text-zinc-500">
-              🔒 内定者を3問クリアで解放
-            </p>
-          </div>
-        </div>
-        <div className="rounded-2xl border border-dashed border-zinc-300 bg-zinc-50 p-6 text-center text-sm text-zinc-500 dark:border-zinc-700 dark:bg-zinc-900/50">
-          近日公開
-        </div>
-      </section>
+      {displayRanks.map((rank) => (
+        <RankSection key={rank} rank={rank} />
+      ))}
 
       <p className="mt-12 text-center text-xs text-zinc-400">
         © 2026 SPI ナンプレ
