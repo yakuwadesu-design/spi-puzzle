@@ -17,7 +17,8 @@ export type Problem = {
   hints: string[];
   positions: string[];
   solution: Record<string, string>;
-  estimatedSeconds: number;
+  estimatedSeconds: number; // ゆっくり解いた目安時間（参考表示）
+  timeLimit: number; // 制限時間（SPI想定、タイマー用）
   tips: string;
 };
 
@@ -47,6 +48,7 @@ export const problem_1_1: Problem = {
   positions: ["1位", "2位", "3位", "4位"],
   solution: { B: "1位", A: "2位", C: "3位", D: "4位" },
   estimatedSeconds: 180,
+  timeLimit: 90,
   tips: "ヒント③「俺より下に1人いる」を消去法で読み解けるかが SPI推論の核心。「A・B はすでに C より上 → 残る D が C より下」と推論する流れがポイント。",
 };
 
@@ -76,6 +78,7 @@ export const problem_1_2: Problem = {
   positions: ["1位", "2位", "3位", "4位"],
   solution: { D: "1位", C: "2位", B: "3位", A: "4位" },
   estimatedSeconds: 120,
+  timeLimit: 90,
   tips: "ヒント④で C=2位 を直接確定し、ヒント②③ で D > B > A の順序を導く。SPI推論は「確定できる部分から埋める」のが定石。",
 };
 
@@ -105,6 +108,7 @@ export const problem_1_3: Problem = {
   positions: ["1位", "2位", "3位", "4位"],
   solution: { B: "1位", C: "2位", A: "3位", D: "4位" },
   estimatedSeconds: 150,
+  timeLimit: 90,
   tips: "ヒント①と③のコンビが鍵：『C > A』＋『C ≠ 1位』から C=2位、A=3位 が確定する。「等価な制約を3つ4つ組み合わせて徐々に範囲を狭める」が SPI推論の定石。",
 };
 

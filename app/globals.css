@@ -24,3 +24,112 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* ==============================
+   カスタムアニメーション
+   ============================== */
+
+/* 配置時のポップ */
+@keyframes pop-in {
+  0% {
+    opacity: 0;
+    transform: scale(0.7);
+  }
+  60% {
+    opacity: 1;
+    transform: scale(1.08);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+.animate-pop-in {
+  animation: pop-in 0.28s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+/* 順位枠の展開 */
+@keyframes expand-down {
+  0% {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.animate-expand-down {
+  animation: expand-down 0.18s ease-out both;
+}
+
+/* 正解時の祝福 */
+@keyframes celebrate {
+  0%, 100% {
+    transform: scale(1) rotate(0);
+  }
+  25% {
+    transform: scale(1.1) rotate(-3deg);
+  }
+  75% {
+    transform: scale(1.1) rotate(3deg);
+  }
+}
+.animate-celebrate {
+  animation: celebrate 0.6s ease-in-out;
+}
+
+/* モーダルのスライドアップ */
+@keyframes slide-up {
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.animate-slide-up {
+  animation: slide-up 0.25s ease-out both;
+}
+
+/* モーダル背景のフェードイン */
+@keyframes fade-in {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+.animate-fade-in {
+  animation: fade-in 0.18s ease-out both;
+}
+
+/* タイマー警告の点滅 */
+@keyframes pulse-warn {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+.animate-pulse-warn {
+  animation: pulse-warn 1s ease-in-out infinite;
+}
+
+/* 紙吹雪用の小さなパーティクル（簡易版） */
+@keyframes confetti-fall {
+  0% {
+    opacity: 1;
+    transform: translateY(-100vh) rotate(0deg);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(100vh) rotate(720deg);
+  }
+}
+.animate-confetti {
+  animation: confetti-fall 2s ease-in both;
+}
