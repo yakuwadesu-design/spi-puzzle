@@ -59,14 +59,14 @@ export default function Home() {
         {/* CTA */}
         <div className="flex flex-col items-center gap-3">
           <a
-            href="#waitlist"
+            href="/play"
             className="inline-flex h-12 items-center justify-center gap-2 rounded-full bg-zinc-900 px-6 text-sm font-medium text-white transition-colors hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-300"
           >
-            リリース通知を受け取る
+            🔰 1問やってみる（無料）
             <span aria-hidden>→</span>
           </a>
           <p className="text-xs text-zinc-500 dark:text-zinc-500">
-            ※ プロトタイプ準備中。フォーム実装は近日中
+            登録不要 ・ 約3分で1問解けます
           </p>
         </div>
 
