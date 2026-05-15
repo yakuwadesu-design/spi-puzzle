@@ -4,23 +4,24 @@ import { useState } from "react";
 import type { Problem } from "@/data/problems";
 
 type Props = { problem: Problem };
+type Placement = Record<string, string | null>;
 
-type Placement = Record<string, string | null>; // position → characterId | null
+const MEDALS = ["🥇", "🥈", "🥉", "🏅", "🎖️"];
 
 export function PuzzleBoard({ problem }: Props) {
   // 順位枠 → 配置されたキャラID（null=空）
   const [placements, setPlacements] = useState<Placement>(
     Object.fromEntries(problem.positions.map((p) => [p, null]))
   );
-  // 現在選択されているキャラのID
-  const [selectedChar, setSelectedChar] = useState<string | null>(null);
-  // 答え合わせモーダル表示
+  // 現在開いている順位枠（インライン式キャラピッカー）
+  const [expandedSlot, setExpandedSlot] = useState<string | null>(null);
+  // 答え合わせモーダル
   const [showResult, setShowResult] = useState(false);
 
-  const placedCharIds = new Set(Object.values(placements).filter(Boolean) as string[]);
+  const placedCharIds = new Set(
+    Object.values(placements).filter(Boolean) as string[]
+  );
   const allFilled = Object.values(placements).every((c) => c !== null);
-
-  // 答えが合っているか判定
   const isCorrect = problem.positions.every(
     (pos) =>
       placements[pos] ===
@@ -30,62 +31,40 @@ export function PuzzleBoard({ problem }: Props) {
   const getChar = (id: string | null) =>
     id ? problem.characters.find((c) => c.id === id) ?? null : null;
 
-  // キャラカードをタップ
-  const handleCharClick = (charId: string) => {
-    if (placedCharIds.has(charId)) {
-      // 配置済 → 枠から戻す
-      const slotEntry = Object.entries(placements).find(([, c]) => c === charId);
-      if (slotEntry) {
-        setPlacements({ ...placements, [slotEntry[0]]: null });
-      }
-      setSelectedChar(null);
-    } else {
-      // 未配置 → 選択/選択解除
-      setSelectedChar(selectedChar === charId ? null : charId);
+  // 順位枠にキャラを配置（他の枠から自動で外す）
+  const handleSelectChar = (position: string, charId: string) => {
+    const newPlacements = { ...placements };
+    for (const p of problem.positions) {
+      if (newPlacements[p] === charId) newPlacements[p] = null;
     }
+    newPlacements[position] = charId;
+    setPlacements(newPlacements);
+    setExpandedSlot(null);
   };
 
-  // 順位枠をタップ
-  const handleSlotClick = (position: string) => {
-    if (selectedChar) {
-      // 選択中のキャラを配置（既存があれば置換）
-      const newPlacements = { ...placements };
-      // 選択中のキャラが他の枠にあれば、そこから外す
-      for (const pos of problem.positions) {
-        if (newPlacements[pos] === selectedChar) {
-          newPlacements[pos] = null;
-        }
-      }
-      newPlacements[position] = selectedChar;
-      setPlacements(newPlacements);
-      setSelectedChar(null);
-    } else if (placements[position]) {
-      // キャラ未選択で、枠にキャラがあれば外す
-      setPlacements({ ...placements, [position]: null });
-    }
+  // 順位枠をクリア
+  const handleClearSlot = (position: string) => {
+    setPlacements({ ...placements, [position]: null });
+    setExpandedSlot(null);
   };
-
-  const handleSubmit = () => setShowResult(true);
 
   const handleReset = () => {
     setPlacements(
       Object.fromEntries(problem.positions.map((p) => [p, null]))
     );
-    setSelectedChar(null);
+    setExpandedSlot(null);
     setShowResult(false);
   };
-
-  const medals = ["🥇", "🥈", "🥉", "🏅", "🎖️"];
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-6 text-zinc-900 dark:text-zinc-100 sm:py-10">
       {/* ヘッダー */}
       <div className="mb-4 flex flex-wrap items-center gap-2 text-sm">
         <a
-          href="/"
+          href="/play"
           className="text-zinc-500 underline-offset-2 hover:underline"
         >
-          ← TOP
+          ← 問題一覧
         </a>
         <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-medium text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200">
           {problem.rankEmoji} {problem.rankTitle} Lv.{problem.rank}
@@ -93,10 +72,8 @@ export function PuzzleBoard({ problem }: Props) {
         <span className="text-xs text-zinc-500">問題 {problem.id}</span>
       </div>
 
-      {/* タイトル */}
       <h1 className="mb-3 text-2xl font-bold sm:text-3xl">{problem.title}</h1>
 
-      {/* シナリオ */}
       <p className="mb-6 text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
         {problem.scenario}
       </p>
@@ -136,82 +113,122 @@ export function PuzzleBoard({ problem }: Props) {
         </ol>
       </section>
 
-      {/* 順位枠 */}
+      {/* 順位枠（インライン式キャラピッカー） */}
       <section className="mb-6">
         <h2 className="mb-3 text-xs font-semibold uppercase tracking-wide text-zinc-500">
-          あなたの解答
+          あなたの解答（順位枠をタップ → キャラを選ぶ）
         </h2>
-        <div className="space-y-3">
+        <div className="space-y-2">
           {problem.positions.map((position, idx) => {
-            const charId = placements[position];
-            const char = getChar(charId);
-            const medal = medals[idx] ?? "🏅";
+            const isExpanded = expandedSlot === position;
+            const placedChar = getChar(placements[position]);
+            const medal = MEDALS[idx] ?? "🏅";
+
             return (
-              <button
+              <div
                 key={position}
-                onClick={() => handleSlotClick(position)}
-                className={`flex w-full items-center gap-3 rounded-xl border-2 p-4 text-left transition-all ${
-                  char
-                    ? "border-emerald-400 bg-emerald-50 dark:border-emerald-700 dark:bg-emerald-950/40"
-                    : selectedChar
-                    ? "border-dashed border-emerald-400 bg-emerald-50/50 hover:bg-emerald-100 dark:border-emerald-700 dark:bg-emerald-950/20"
-                    : "border-dashed border-zinc-300 bg-white hover:border-zinc-400 dark:border-zinc-700 dark:bg-zinc-950"
+                className={`overflow-hidden rounded-xl border-2 transition-all ${
+                  placedChar
+                    ? "border-emerald-400 dark:border-emerald-700"
+                    : isExpanded
+                    ? "border-blue-400 dark:border-blue-700"
+                    : "border-zinc-200 dark:border-zinc-800"
                 }`}
               >
-                <span className="text-2xl">{medal}</span>
-                <span className="font-semibold">{position}</span>
-                {char ? (
-                  <span className="ml-auto flex items-center gap-2">
-                    <span className="text-2xl">{char.emoji}</span>
-                    <span className="text-base font-bold">{char.id}</span>
-                  </span>
-                ) : (
-                  <span className="ml-auto text-sm text-zinc-400">
-                    {selectedChar ? "タップで配置" : "未配置"}
-                  </span>
+                {/* 順位枠のヘッダー（タップで展開/折り畳み） */}
+                <button
+                  onClick={() =>
+                    setExpandedSlot(isExpanded ? null : position)
+                  }
+                  className={`flex w-full items-center gap-3 p-4 text-left transition-colors ${
+                    placedChar
+                      ? "bg-emerald-50 dark:bg-emerald-950/40"
+                      : "bg-white hover:bg-zinc-50 dark:bg-zinc-950 dark:hover:bg-zinc-900"
+                  }`}
+                >
+                  <span className="text-2xl">{medal}</span>
+                  <span className="font-semibold">{position}</span>
+                  {placedChar ? (
+                    <span className="ml-auto flex items-center gap-2">
+                      <span className="text-2xl">{placedChar.emoji}</span>
+                      <span className="font-bold">{placedChar.id}</span>
+                      <span className="text-xs text-zinc-500">
+                        {isExpanded ? "▲" : "変更"}
+                      </span>
+                    </span>
+                  ) : (
+                    <span className="ml-auto text-sm font-medium text-blue-600 dark:text-blue-400">
+                      {isExpanded ? "▲ 閉じる" : "▼ 選ぶ"}
+                    </span>
+                  )}
+                </button>
+
+                {/* 展開時：キャラピッカー */}
+                {isExpanded && (
+                  <div className="border-t border-zinc-200 bg-zinc-50 p-3 dark:border-zinc-800 dark:bg-zinc-900/60">
+                    <div className="grid grid-cols-4 gap-2">
+                      {problem.characters.map((char) => {
+                        const isCurrentlyHere =
+                          placements[position] === char.id;
+                        const placedElsewhere =
+                          placedCharIds.has(char.id) && !isCurrentlyHere;
+                        return (
+                          <button
+                            key={char.id}
+                            disabled={placedElsewhere}
+                            onClick={() => handleSelectChar(position, char.id)}
+                            className={`flex flex-col items-center gap-1 rounded-lg border-2 p-2 transition-all ${
+                              isCurrentlyHere
+                                ? "border-emerald-500 bg-emerald-100 dark:bg-emerald-950"
+                                : placedElsewhere
+                                ? "cursor-not-allowed border-zinc-200 bg-zinc-100 opacity-40 dark:border-zinc-800 dark:bg-zinc-900"
+                                : "border-zinc-300 bg-white hover:border-blue-400 hover:bg-blue-50 active:scale-95 dark:border-zinc-700 dark:bg-zinc-950 dark:hover:border-blue-700 dark:hover:bg-blue-950/40"
+                            }`}
+                          >
+                            <span className="text-3xl">{char.emoji}</span>
+                            <span className="text-sm font-bold">{char.id}</span>
+                            {placedElsewhere && (
+                              <span className="text-[10px] text-zinc-500">
+                                配置済
+                              </span>
+                            )}
+                          </button>
+                        );
+                      })}
+                    </div>
+                    {placedChar && (
+                      <button
+                        onClick={() => handleClearSlot(position)}
+                        className="mt-2 w-full rounded-lg border border-dashed border-zinc-300 py-2 text-xs text-zinc-500 hover:bg-zinc-100 dark:border-zinc-700 dark:hover:bg-zinc-800"
+                      >
+                        🗑 この順位をクリア
+                      </button>
+                    )}
+                  </div>
                 )}
-              </button>
+              </div>
             );
           })}
         </div>
-      </section>
 
-      {/* キャラカード */}
-      <section className="mb-6">
-        <h2 className="mb-3 text-xs font-semibold uppercase tracking-wide text-zinc-500">
-          営業マンカード（タップして選択 → 順位枠をタップで配置）
-        </h2>
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-          {problem.characters.map((char) => {
-            const isPlaced = placedCharIds.has(char.id);
-            const isSelected = selectedChar === char.id;
-            return (
-              <button
-                key={char.id}
-                onClick={() => handleCharClick(char.id)}
-                className={`flex flex-col items-center gap-1 rounded-xl border-2 p-3 transition-all ${
-                  isSelected
-                    ? "border-blue-500 bg-blue-50 ring-2 ring-blue-300 dark:border-blue-400 dark:bg-blue-950/40"
-                    : isPlaced
-                    ? "border-zinc-300 bg-zinc-100 opacity-60 dark:border-zinc-700 dark:bg-zinc-900"
-                    : "border-zinc-300 bg-white hover:border-zinc-400 dark:border-zinc-700 dark:bg-zinc-950"
-                }`}
-              >
-                <span className="text-3xl">{char.emoji}</span>
-                <span className="text-sm font-semibold">{char.id}</span>
-                <span className="text-[10px] text-zinc-500">
-                  {isSelected ? "選択中" : isPlaced ? "配置済" : ""}
-                </span>
-              </button>
-            );
-          })}
+        {/* 進捗インジケータ */}
+        <div className="mt-3 flex items-center justify-between text-xs text-zinc-500">
+          <span>
+            進捗：{Object.values(placements).filter(Boolean).length} /{" "}
+            {problem.positions.length}
+          </span>
+          {allFilled && (
+            <span className="font-medium text-emerald-600 dark:text-emerald-400">
+              ✓ すべて配置完了
+            </span>
+          )}
         </div>
       </section>
 
       {/* アクションボタン */}
-      <div className="flex flex-col gap-3 sm:flex-row">
+      <div className="sticky bottom-4 z-10 flex flex-col gap-3 rounded-2xl bg-white/95 p-3 shadow-lg backdrop-blur sm:flex-row sm:bg-transparent sm:p-0 sm:shadow-none sm:backdrop-blur-none dark:bg-zinc-950/95 dark:sm:bg-transparent">
         <button
-          onClick={handleSubmit}
+          onClick={() => setShowResult(true)}
           disabled={!allFilled}
           className="flex-1 rounded-full bg-zinc-900 px-6 py-3 font-medium text-white transition-colors hover:bg-zinc-800 disabled:cursor-not-allowed disabled:bg-zinc-300 disabled:text-zinc-500 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200 dark:disabled:bg-zinc-800 dark:disabled:text-zinc-600"
         >
@@ -264,7 +281,7 @@ export function PuzzleBoard({ problem }: Props) {
                         className="flex items-center gap-2 text-sm"
                       >
                         <span className="w-8 text-lg">
-                          {medals[idx] ?? "🏅"}
+                          {MEDALS[idx] ?? "🏅"}
                         </span>
                         <span className="font-semibold">{pos}：</span>
                         <span className="text-xl">{ch?.emoji}</span>
