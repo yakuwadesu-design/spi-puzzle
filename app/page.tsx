@@ -152,11 +152,6 @@ export default function Home() {
             問題一覧を見る
           </a>
         </div>
-
-        {/* フッター */}
-        <footer className="mt-8 text-xs text-zinc-400 dark:text-zinc-600">
-          © 2026 SPI ナンプレ · Built with Next.js & Vercel
-        </footer>
       </main>
     </div>
   );
