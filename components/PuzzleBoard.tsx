@@ -29,6 +29,11 @@ export function PuzzleBoard({ problem }: Props) {
   const [hintPenalty, setHintPenalty] = useState(0); // ヒントペナルティ合計
   const [solveTime, setSolveTime] = useState<number | null>(null); // 解いた時の経過時間
 
+  // 時間切れアラート
+  const [timeUpAlertShown, setTimeUpAlertShown] = useState(false);
+  const [timeUpFlash, setTimeUpFlash] = useState(false);
+  const hasTimeUpFiredRef = useRef(false);
+
   // 段階的ヒント
   const [revealedHints, setRevealedHints] = useState(2); // 最初は2つ表示
 
@@ -54,6 +59,21 @@ export function PuzzleBoard({ problem }: Props) {
   useEffect(() => {
     setRecord(getRecord(problem.id));
   }, [problem.id]);
+
+  // 時間切れ検出（残り0秒以下になった瞬間に1度だけ発火）
+  useEffect(() => {
+    if (!isRunning || showResult) return;
+    const timeWithPenaltyLocal = elapsed + hintPenalty;
+    const timeLeftLocal = problem.timeLimit - timeWithPenaltyLocal;
+    if (timeLeftLocal <= 0 && !hasTimeUpFiredRef.current) {
+      hasTimeUpFiredRef.current = true;
+      setTimeUpAlertShown(true);
+      setTimeUpFlash(true);
+      // フラッシュは0.7秒で消す
+      const flashTimer = setTimeout(() => setTimeUpFlash(false), 700);
+      return () => clearTimeout(flashTimer);
+    }
+  }, [elapsed, hintPenalty, isRunning, showResult, problem.timeLimit]);
 
   const placedCharIds = new Set(
     Object.values(placements).filter(Boolean) as string[]
@@ -123,6 +143,9 @@ export function PuzzleBoard({ problem }: Props) {
     setHintPenalty(0);
     setSolveTime(null);
     setRevealedHints(2);
+    setTimeUpAlertShown(false);
+    setTimeUpFlash(false);
+    hasTimeUpFiredRef.current = false;
     startTimeRef.current = Date.now();
     setIsRunning(true);
   };
@@ -162,7 +185,53 @@ export function PuzzleBoard({ problem }: Props) {
   const visibleHints = problem.hints.slice(0, revealedHints);
 
   return (
-    <div className="mx-auto max-w-2xl px-4 py-6 text-zinc-900 dark:text-zinc-100 sm:py-10">
+    <div className="relative mx-auto max-w-2xl px-4 py-6 text-zinc-900 dark:text-zinc-100 sm:py-10">
+      {/* 時間切れフラッシュ（0.7秒で消える赤い覆い） */}
+      {timeUpFlash && (
+        <div className="pointer-events-none fixed inset-0 z-30 animate-fade-in bg-red-500/25" />
+      )}
+
+      {/* 時間切れアラート（初回のみ） */}
+      {timeUpAlertShown && !showResult && (
+        <div
+          className="fixed inset-0 z-40 flex animate-fade-in items-center justify-center bg-black/60 p-4"
+          onClick={() => setTimeUpAlertShown(false)}
+        >
+          <div
+            className="w-full max-w-sm animate-slide-up rounded-2xl bg-white p-6 text-center shadow-2xl dark:bg-zinc-900"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="mb-2 text-5xl animate-celebrate inline-block">⏰</div>
+            <h2 className="mb-2 text-2xl font-bold">時間切れ！</h2>
+            <p className="mb-5 text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
+              制限時間 <strong>{problem.timeLimit}秒</strong> を経過しました。
+              <br />
+              ⭐ 制限時間内バッジは取れませんが、
+              <br />
+              続けるか、ここで答え合わせするかを選べます。
+            </p>
+            <div className="flex flex-col gap-2">
+              <button
+                onClick={() => {
+                  setTimeUpAlertShown(false);
+                  handleSubmit();
+                }}
+                disabled={!allFilled}
+                className="rounded-full bg-zinc-900 px-4 py-2.5 text-sm font-medium text-white transition-all hover:bg-zinc-800 active:scale-95 disabled:cursor-not-allowed disabled:bg-zinc-300 disabled:text-zinc-500 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200 dark:disabled:bg-zinc-800"
+              >
+                {allFilled ? "このまま答え合わせ" : "答え合わせ（未配置あり）"}
+              </button>
+              <button
+                onClick={() => setTimeUpAlertShown(false)}
+                className="rounded-full border border-zinc-300 px-4 py-2 text-sm font-medium hover:bg-zinc-100 dark:border-zinc-700 dark:hover:bg-zinc-800"
+              >
+                そのまま考える（時間オーバー）
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* ヘッダー */}
       <div className="mb-4 flex flex-wrap items-center gap-2 text-sm">
         <a
