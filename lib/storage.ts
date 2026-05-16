@@ -126,3 +126,80 @@ export function markUnlockSeen(rank: number): void {
   if (!isClient()) return;
   localStorage.setItem(UNLOCK_SEEN_KEY_PREFIX + rank, "true");
 }
+
+// ==============================
+// 統計（/stats ページ用）
+// ==============================
+
+export type Stats = {
+  totalSolved: number;
+  totalAttempted: number; // = solvedCount の合計（複数回挑戦含む）
+  totalBestTimeSeconds: number; // ベストタイムの合計
+  avgBestTimeSeconds: number; // 平均ベストタイム
+  inTimeBadges: number; // ⭐ 制限時間内クリアの数
+  noHintBadges: number; // 🎯 ノーヒントクリアの数
+  fastestSolveSeconds: number | null; // 全問題中の最速タイム
+  rankBreakdown: Record<
+    number,
+    { total: number; solved: number; avgTime: number }
+  >;
+};
+
+export function getStats(
+  allProblems: ProblemLike[]
+): Stats {
+  const progress = loadProgress();
+  const records = progress.records;
+  const solvedIds = Object.keys(records);
+
+  let totalBestTime = 0;
+  let totalAttempted = 0;
+  let inTimeBadges = 0;
+  let noHintBadges = 0;
+  let fastestSolve: number | null = null;
+
+  for (const id of solvedIds) {
+    const r = records[id];
+    totalBestTime += r.bestTimeSeconds;
+    totalAttempted += r.solvedCount;
+    if (r.withinTimeLimit) inTimeBadges++;
+    if (r.noHintCleared) noHintBadges++;
+    if (fastestSolve === null || r.bestTimeSeconds < fastestSolve) {
+      fastestSolve = r.bestTimeSeconds;
+    }
+  }
+
+  const totalSolved = solvedIds.length;
+  const avgBestTime = totalSolved > 0 ? Math.round(totalBestTime / totalSolved) : 0;
+
+  // ランク別集計
+  const rankBreakdown: Stats["rankBreakdown"] = {};
+  const ranks = Array.from(new Set(allProblems.map((p) => p.rank))).sort();
+  for (const rank of ranks) {
+    const rankProblems = allProblems.filter((p) => p.rank === rank);
+    const total = rankProblems.length;
+    const solvedRankProblems = rankProblems.filter((p) => records[p.id]);
+    const solved = solvedRankProblems.length;
+    const avgTime =
+      solved > 0
+        ? Math.round(
+            solvedRankProblems.reduce(
+              (sum, p) => sum + records[p.id].bestTimeSeconds,
+              0
+            ) / solved
+          )
+        : 0;
+    rankBreakdown[rank] = { total, solved, avgTime };
+  }
+
+  return {
+    totalSolved,
+    totalAttempted,
+    totalBestTimeSeconds: totalBestTime,
+    avgBestTimeSeconds: avgBestTime,
+    inTimeBadges,
+    noHintBadges,
+    fastestSolveSeconds: fastestSolve,
+    rankBreakdown,
+  };
+}

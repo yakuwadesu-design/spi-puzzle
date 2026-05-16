@@ -1,36 +1,138 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# SPI ナンプレ
 
-## Getting Started
+> 就活・転職で受ける SPI／玉手箱の推論問題を、**ナンプレ風のロジパズUI** で遊びながら攻略できる Webアプリ。
 
-First, run the development server:
+**🔗 ライブ版**：[https://spi-puzzle.vercel.app](https://spi-puzzle.vercel.app)
+
+---
+
+## 🎯 このプロダクトについて
+
+人材紹介の現場で「SPI で落ちる中途応募者を毎月見送る」経験から生まれた、SPI 対策アプリです。
+
+既存の SPI 対策アプリは「4択問題集」が中心で、続けにくい設計でした。
+このアプリは **ナンプレ感覚で論理を埋める** UI を採用し、5分のスキマ時間で1問解ける習慣化設計です。
+
+### 主な特徴
+
+- 🧩 **ナンプレ風 UI**：論理を埋めるパズル感覚で SPI推論を攻略
+- 🎓 **就活生は完全無料**：基本機能すべて無料、広告ゼロ
+- 💼 **業界別パック**（提供予定）：IT営業／人材／経理など、現役人事監修の問題集
+- 🏆 **7段階ランク制度**：内定者 → 新人 → 若手 → エース → マネージャー → 部長 → 役員
+- ⏱️ **タイマー＋ベストタイム記録**：自己ベスト更新で達成感
+- 📊 **段階的ヒント**：詰まったらヒントを開示（+10秒ペナルティ）
+- 🐦 **シェア機能**：スコアを SNS で共有（OGP画像対応）
+
+---
+
+## 📊 現在のコンテンツ
+
+| ランク | 称号 | 問題数 | 制限時間 |
+|---|---|---|---|
+| Lv.1 | 🔰 内定者 | 3問 | 90秒 |
+| Lv.2 | 🌱 新人 | 3問 | 75秒 |
+| Lv.3 | 👔 若手 | 2問 | 60秒 |
+| Lv.4 | 🚀 エース | 2問 | 50秒 |
+| Lv.5 | 🎩 マネージャー | 2問 | 45秒 |
+| Lv.6 | 🏆 部長 | 2問 | 40秒 |
+| Lv.7 | 💎 役員 | 2問 | 30秒 |
+| **合計** | | **16問** | |
+
+---
+
+## 🛠️ 技術スタック
+
+- **フレームワーク**：[Next.js 15](https://nextjs.org/)（App Router）
+- **言語**：TypeScript
+- **スタイリング**：[Tailwind CSS](https://tailwindcss.com/)
+- **ホスティング**：[Vercel](https://vercel.com/)
+- **画像生成**：[@vercel/og](https://vercel.com/docs/concepts/functions/edge-functions/og-image-generation)（動的 OGP）
+- **データ保存**：LocalStorage（クライアントサイドのみ）
+
+完全 0円スタックで構築。
+
+---
+
+## 🚀 開発・起動方法
+
+### 開発サーバー起動
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+[http://localhost:3000](http://localhost:3000) で開く。
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### プロダクションビルド
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm run build
+npm start
+```
 
-## Learn More
+### デプロイ
 
-To learn more about Next.js, take a look at the following resources:
+`main` ブランチに push すると Vercel が自動デプロイ。
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+---
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 📁 プロジェクト構造
 
-## Deploy on Vercel
+```
+spi-puzzle/
+├── app/
+│   ├── page.tsx                       # TOP ページ
+│   ├── layout.tsx                     # 共通レイアウト（フッター含む）
+│   ├── opengraph-image.tsx            # ルート OGP画像
+│   ├── play/
+│   │   ├── page.tsx                   # 問題選択画面
+│   │   └── [id]/
+│   │       ├── page.tsx               # 問題プレイ画面
+│   │       └── opengraph-image.tsx    # 問題ごとの OGP画像
+│   └── legal/
+│       ├── tokushoho/page.tsx         # 特定商取引法に基づく表記
+│       ├── privacy/page.tsx           # プライバシーポリシー
+│       └── terms/page.tsx             # 利用規約
+├── components/
+│   ├── PuzzleBoard.tsx                # パズル UI コンポーネント
+│   ├── ProblemCard.tsx                # 問題カード
+│   ├── RankSection.tsx                # ランク表示
+│   ├── RankSummary.tsx                # ランクサマリー
+│   └── LegalFooter.tsx                # 共通フッター
+├── data/
+│   └── problems.ts                    # 全16問のデータ
+└── lib/
+    └── storage.ts                     # LocalStorage 管理
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+---
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 🎨 デザイン哲学
+
+- **モバイルファースト**：スマホで快適に5分プレイできる UX
+- **タップ式 UI**：ドラッグ＆ドロップではなく、タップで配置（モバイル最適化）
+- **広告ゼロ**：集中して取り組める設計
+- **段階的解放**：3問クリアで次のランクが解放 → モチベ維持
+- **記録の可視化**：ベストタイム・連続正解・ノーヒントクリアでバッジ獲得
+
+---
+
+## 📝 関連リンク
+
+- **本記事**：[人材エージェントとして見てきた、SPIで落ちる人の共通点（IT営業／人材業界編）](#)（note 公開予定）
+- **作者の Twitter**：（公開時に追加）
+
+---
+
+## 📜 ライセンス
+
+このプロジェクトのソースコードは個人プロジェクトとして公開していますが、問題・解答・キャラクターデザインの **無断転用は禁止**します。
+コードの参考利用は歓迎します。
+
+---
+
+## 🙏 謝辞
+
+このプロダクトは、人材紹介の現場で「SPI で泣く中途応募者」を見送った経験から生まれました。
+転職活動に挑戦するすべての方の健闘を祈っています。
